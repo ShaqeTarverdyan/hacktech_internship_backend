@@ -38,16 +38,16 @@ router.post(
         '/news',
         upload.array('file', 10),
         isAuth,
-        // [
-        //     body('title')
-        //         .trim()
-        //         .notEmpty(),
-        //     body('content')
-        //         .trim()
-        //         .notEmpty()
-        // ],
+        [
+            body('title')
+                .trim()
+                .notEmpty(),
+            body('content')
+                .trim()
+                .notEmpty()
+        ],
         newsController.addNews);
-router.put('/news/:newsId', isAuth, newsController.updateNews);
+router.put('/news/:newsId', upload.array('file', 10), isAuth, newsController.updateNews);
 router.delete('/news/:newsId',isAuth, newsController.deleteNews);
 router.get('/news-/:newsId', isAuth, newsController.getCurrentNews);
 router.get("/types",isAuth, newsController.getTypes);
@@ -55,10 +55,10 @@ router.get("/types",isAuth, newsController.getTypes);
 router.get('/news?', isAuth, newsController.getNewsList);
 router.get('/myNews?', isAuth, newsController.getMyNewsList);
 router.post('/attachAdminToNews', newsController.attachAdminToNews);
-router.get('/attachedAdmins', newsController.getAttachedAdmins);
+router.get('/attachedAdmins', isAuth, newsController.getAttachedAdmins);
 router.post('/sendDataToUserWithPdfFormat', newsController.sendDataToUserWithPdfFormat);
-router.get('/deleteImage', newsController.deleteImage);
-router.get('/deleteFile', newsController.deleteFile)
+router.get('/deleteImage',isAuth, newsController.deleteImage);
+router.get('/deleteFile',isAuth, newsController.deleteFile)
 
 module.exports = router;
 

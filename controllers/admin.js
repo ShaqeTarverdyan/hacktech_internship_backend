@@ -104,7 +104,6 @@ exports.registerNewAdmin = (req,res,next) => {
         }).then(result => {
             if(isInvitation === undefined) {
               let superAdmins = [];
-              console.log('shaqe yes')
               Admin.findAll({
                 where: {
                   role: 'super'

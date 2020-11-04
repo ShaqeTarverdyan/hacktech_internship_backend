@@ -52,6 +52,12 @@ exports.deleteImage = async (req, res, next) => {
 
 exports.sendDataToUserWithPdfFormat = (req, res) => {
   const { email, newsIds } = req.body;
+  const errors = validationResult(req);
+  if(!errors.isEmpty()) {
+      const error = new Error('Validation Failed!.entered data is not correct!')
+      error.statusCode = 422;
+      throw error;
+  }
   let fullSelectedNews = []
   News.findAll({
     where: {
@@ -229,26 +235,24 @@ exports.addNews = async (req,res,next) => {
     }
 };
 
-exports.updateNews = (req,res,next) => {
-  const admin_id = req.adminId;
-  const newsId = req.params.newsId;
-  const { title, content, newsType } = req.body;
-  const errors = validationResult(req);
-    if(!errors.isEmpty()) {
-      const error = new Error('Validation Failed!.entered data is not correct!')
-      error.statusCode = 422;
-      throw error;
-      
-    }
-  News.findOne({
-    where: {
-      id: newsId
-    },
-    include: {
-      model: File
-    }
-  })
-  .then(news => {
+exports.updateNews = async (req,res,next) => {
+  try {
+    const admin_id = req.adminId;
+    const newsId = req.params.newsId;
+    const { title, content, newsType } = req.body;
+    const errors = validationResult(req);
+      if(!errors.isEmpty()) {
+        const error = new Error('Validation Failed!.entered data is not correct!')
+        error.statusCode = 422;
+        throw error;
+        
+      }
+
+    const news = await News.findOne ({
+      where: {
+        id: newsId
+      }
+    })
     if(!news) {
       const error = new Error('Could not find admin !');
       error.statusCode = 404;
@@ -258,20 +262,31 @@ exports.updateNews = (req,res,next) => {
     news.content = content,
     news.newsType = newsType,
     news.admin_id = admin_id
-    return news.save();
-  })
-  .then(updatedNews => {
+    if(req.files) {
+      for(let i = 0; i < req.files.length; i++) {
+        let isImage = req.files[i].mimetype.startsWith('image');
+        let file;
+        if(isImage) {
+          file = await Image.create(req.files[i]);
+          news.addImage(file); 
+        }else {
+          file = await File.create(req.files[i]);
+          news.addFile(file);
+        }
+      };
+    }
+    await news.save();
+  
     res.status(200).json({
       message: 'News updated successfuly !',
-      news: updatedNews
+        news: news
     })
-  })
-  .catch(err => {
+  }catch(err) {
     if(!err.statusCode) {
       err.statusCode = 500;
     }
     next(err);
-  })
+  }
 };
 
 exports.deleteNews = (req,res,next) => {
