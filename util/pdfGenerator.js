@@ -9,15 +9,19 @@ module.exports = (fullSelectedNews) => {
     pdfDoc.pipe(fs.createWriteStream(pdfFileName));
     fullSelectedNews.map(item => {
       pdfDoc
+        .fontSize(8)
         .fillColor('blue')
-        .text(item.title, {oblique : true, lineBreak : false});
+        .text(
+          item.title, 
+          {oblique : true, width: 410, align: 'center'}
+        );
       pdfDoc
         .fillColor('red')
-        .text(item.content);
+        .text(item.content), {oblique : true, width: 410, align: 'left'};
       item.images.map(image => 
           pdfDoc
             .image(image.dataValues.path, {width: 150, height: 150, align: 'center'}))
-    });
+      });
     pdfDoc.end();
     return pdfFileName;
   }
