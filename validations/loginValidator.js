@@ -1,5 +1,4 @@
 const { body } = require('express-validator');
-const Admin = require('../models/admin');
 
 
 module.exports = () => 
