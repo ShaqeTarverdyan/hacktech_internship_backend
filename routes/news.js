@@ -1,11 +1,11 @@
 const express = require('express');
-const { body } = require('express-validator');
 const router = express.Router();
 const newsController = require('../controllers/news');
 const isAuth = require('../middleware/is-auth');
 var multer  = require('multer')
 const path = require('path');
-const uuid = require('uuid')
+const uuid = require('uuid');
+const newsValidator = require('../validations/newsValidator');
 
 
 const fileStorage = multer.diskStorage({
@@ -17,35 +17,13 @@ const fileStorage = multer.diskStorage({
     }
 });
 
-
-// const fileFilter = (req, file, cb) => {
-//     console.log('file', file);
-//     if(
-//         file.mimetype === 'image/png' || 
-//         file.mimetype === 'image/jpg' ||
-//         file.mimetype === 'image/jpeg'
-//     ) {
-//         cb(null, true);
-//     } else {
-//         cb(null, false);
-//     };
-//    // checkFileType(file, cb)
-// };
-
 const upload = multer({ storage: fileStorage });
 
 router.post(
         '/news',
         upload.array('file', 10),
         isAuth,
-        [
-            body('title')
-                .trim()
-                .notEmpty(),
-            body('content')
-                .trim()
-                .notEmpty()
-        ],
+        newsValidator,
         newsController.addNews);
 router.put('/news/:newsId', upload.array('file', 10), isAuth, newsController.updateNews);
 router.delete('/news/:newsId',isAuth, newsController.deleteNews);
