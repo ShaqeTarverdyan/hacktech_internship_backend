@@ -84,12 +84,14 @@ exports.registerNewAdmin = (req,res,next) => {
       isInvitation
     } = req.body;
     const errors = validationResult(req);
-    if(!errors.isEmpty()) {
-      const error = new Error()
-      error.statusCode = 422;
-      error.message = 'Validation Failed!.entered data is not correct!';
-      throw error;
+    if (!errors.isEmpty()) {
+      return res
+        .status(400).
+        json({ 
+          errors: errors.array()
+        });
     }
+  
     bcrypt
     .hash(password, 12)
     .then(hashedpassword => {
@@ -129,6 +131,7 @@ exports.registerNewAdmin = (req,res,next) => {
         }).catch(err => {
             if(!err.statusCode) {
                 err.statusCode = 500;
+                err.message = "something wrong with registration :|"
             }
             next(err);
         })
@@ -137,6 +140,14 @@ exports.registerNewAdmin = (req,res,next) => {
 
 exports.loginAdmin = (req, res, next) => {
   const email = req.body.email;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res
+      .status(400)
+      .json({ 
+        errors: errors.array()
+      });
+  }
   let loadeAdmin;
     Admin
     .findOne({ 
@@ -146,10 +157,11 @@ exports.loginAdmin = (req, res, next) => {
     })
     .then(user => {
         if (!user) {
-          const error = new Error();
-          error.statusCode = 401;
-          error.message = 'A user with this email could not be found!';
-          throw error;
+          return res
+            .status(400)
+            .json({ 
+              errors: [{param: 'email', msg: 'There is no user with this email'}] 
+            });
         }
         loadeAdmin = user;
         if(
@@ -165,17 +177,18 @@ exports.loginAdmin = (req, res, next) => {
       })
       .then(isEqual => {
         if(!isEqual) {
-          const error = new Error();
-          error.statusCode = 401;
-          error.message = 'Wrong password :(';
-          throw error;
+          return res
+            .status(400)
+            .json({ 
+              errors: [{param: 'password', msg: 'wrong password'}] 
+            });
         }
         const token = jwt.sign({
           email: loadeAdmin.email,
           adminId: loadeAdmin.id.toString()
         },
           process.env.RANDOM_TOKEN_SECRET,
-          {expiresIn: '1h'}
+          {expiresIn: '3h'}
         );
         res.status(200).json({token: token, admin_id: loadeAdmin.id});
       }).catch(
