@@ -10,7 +10,8 @@ const adminRoutes = require('./routes/admin');
 const newsRouter = require('./routes/news');
 
 dotenv.config();
-
+app.use(express.json());
+app.use(cors());
 app.use(adminRoutes);
 app.use(newsRouter);
 app.use(bodyParser.json());
@@ -25,8 +26,7 @@ app.use((error, req, res, next) => {
     const data = error.data;
     res.status(status).json({message: message, data: data})
 });
-app.use(express.json());
-app.use(cors());
+
 app.use('/public',express.static('public'));
 
 sequelize
