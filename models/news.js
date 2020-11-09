@@ -1,5 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../util/database');
+const File = require('./file');
+const Image = require('./image');
 
 const News = sequelize.define('news', {
     id: {
@@ -7,7 +9,6 @@ const News = sequelize.define('news', {
         autoIncrement: true,
         allowNull: false,
         primaryKey: true
-
     }, 
     title: {
         type: Sequelize.STRING(255),
@@ -23,5 +24,16 @@ const News = sequelize.define('news', {
     }
 });
 
+
+News.hasMany(File, { 
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+  });
+  
+News.hasMany(Image, { 
+    onDelete: 'RESTRICT',
+    onUpdate: 'RESTRICT'
+});
+  
 
 module.exports = News;

@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 
 const sequelize = require('../util/database');
-
+const News = require('./news');
 
 const File = sequelize.define("file",{
     id: {
@@ -35,8 +35,6 @@ const File = sequelize.define("file",{
         allowNull: false
     }
 })
-
-
 
 
 module.exports = File;
