@@ -23,7 +23,7 @@ router.post(
         '/news',
         upload.array('file', 10),
         isAuth,
-        newsValidator,
+        newsValidator(),
         newsController.addNews);
 router.put('/news/:newsId', upload.array('file', 10), isAuth, newsController.updateNews);
 router.delete('/news/:newsId',isAuth, newsController.deleteNews);
