@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser =require('body-parser');
-const sequelize = require('./util/database');
+const mode = require('./migrator');
 const cors = require("cors");
 const app = express();
 const multer = require('multer');
@@ -29,12 +29,9 @@ app.use((error, req, res, next) => {
 
 app.use('/public',express.static('public'));
 
-sequelize
-    .sync({force: false})
+mode.sequelize.sync({force: false})
     .then(result => {
         app.listen(3001);
     }).catch(err => console.log(err))
-
-
 
     
