@@ -1,8 +1,9 @@
-const News = require('../models/news');
-const Types = require('../models/types');
-const Admin = require('../models/admin');
-const File = require('../models/file');
-const Image = require('../models/image');
+const db = require('../migrator');
+const News = db.news;
+const Types = db.news_types;
+const Admin = db.admin;
+const File = db.news_file;
+const Image = db.news_image;
 const { validationResult } = require('express-validator');
 const mailer = require("../util/nodemailer");
 const pdfGenerator = require('../util/pdfGenerator');
@@ -50,25 +51,25 @@ exports.deleteImage = async (req, res, next) => {
   })
 }
 
-exports.sendDataToUserWithPdfFormat = (req, res) => {
-  const { email, newsIds } = req.body;
-  const errors = validationResult(req);
-  if(!errors.isEmpty()) {
-      const error = new Error('Validation Failed!.entered data is not correct!')
-      error.statusCode = 422;
-      throw error;
-  }
-  let fullSelectedNews = []
-  News.findAll({
-    where: {
-      id: newsIds
-    }, 
-    include: [File, Image]
-  }).then(result => {
-    result.map(news => fullSelectedNews.push(news.dataValues));
-    ;
-    const pdfPath = pdfGenerator(fullSelectedNews)
-    
+exports.sendDataToUserWithPdfFormat = async(req, res) => {
+  try{
+    const { email, newsIds } = req.body;
+    const errors = validationResult(req);
+    if(!errors.isEmpty()) {
+        const error = new Error('Validation Failed!.entered data is not correct!')
+        error.statusCode = 422;
+        throw error;
+    }
+
+    const news = await News.findAll({
+      where: {
+        id: newsIds
+      }, 
+      include: [File, Image]
+    });
+    const fullSelectedNews = await news.map(item => item.dataValues);
+    const pdfPath = pdfGenerator(fullSelectedNews);
+
     const message = {
       to: email,
       subject: 'Selected News in format Pdf',
@@ -77,14 +78,13 @@ exports.sendDataToUserWithPdfFormat = (req, res) => {
       `
     }
     mailer(message);
-    res.status(200).json({message: 'Selected News is generated in pdf file Successfully :)'})
-  })
-  .catch(err => {
+    await res.status(200).json({message: 'Selected News is generated in pdf file Successfully :)'})
+  }catch(err) {
     res.status(500).send({
       message: "Error on Generating selected news to pdf format",
       error: err.message,
     });
-  })
+  }
 };
 
 exports.getAttachedAdmins = (req, res) => {
@@ -148,11 +148,11 @@ exports.getNewsList = async(req, res) => {
     let conditions = {};
     
     if(typeId !== undefined) {
-      conditions.typeId = typeId
+      conditions.type_id = typeId
     }
     let options = {
       where: conditions,
-      attributes: ['id', 'title', 'content', 'typeId'],
+      attributes: ['id', 'title', 'content', 'type_id'],
       order: [
         ['createdAt', 'DESC']
       ],
@@ -187,39 +187,42 @@ exports.addNews = async (req,res,next) => {
     const admin_id = req.adminId;
     const { title, content, typeId  } = req.body;
     const errors = validationResult(req);
-    if(!errors.isEmpty()) {
-        const error = new Error('Validation Failed!.entered data is not correct!')
-        error.statusCode = 422;
-        throw error;
+    if (!errors.isEmpty()) {
+      return res
+        .status(400)
+        .json({ 
+          errors: errors.array()
+        });
     }
-    if(!req.files) {
-      const err = new Error();
-      err.statusCode = 422;
-      err.message = ('No Files provided');
-      throw err;
-    }
+    // if(!req.files) {
+    //   const err = new Error();
+    //   err.statusCode = 422;
+    //   err.message = ('No Files provided');
+    //   throw err;
+    // }
     let admin = await Admin.findOne({
       where: {
         id: admin_id
       }
     });
-    
+
     let news = await News.create({
       title: title,
       content: content,
-      typeId: typeId,
+      type_id: typeId,
     });
-
-    for(let i = 0; i < req.files.length; i++) {
-      let isImage = req.files[i].mimetype.startsWith('image');
-      let file;
-      if(isImage) {
-        file = await Image.create(req.files[i]);
-        news.addImage(file);
-      }else {
-        file = await File.create(req.files[i]);
-        news.addFile(file);
-      }
+    if(req.files) {
+      for(let i = 0; i < req.files.length; i++) {
+        let isImage = req.files[i].mimetype.startsWith('image');
+        let file;
+        if(isImage) {
+          file = await Image.create({...req.files[i], news_id: news.id}, { foreignKey: 'news_id'});
+          //news.addImages(file);
+        }else {
+          file = await File.create({...req.files[i], news_id: news.id}, { foreignKey: 'news_id'});
+          // news.addImages(file);
+        }
+      };
     };
 
     let result = await admin.addNews(news, { through: { role: 'Author'}});
@@ -228,6 +231,7 @@ exports.addNews = async (req,res,next) => {
           news: result,
     })
   }catch (err)  {
+    console.log('err', err)
         if(!err.statusCode) {
           err.statusCode = 500;
         }
@@ -267,11 +271,11 @@ exports.updateNews = async (req,res,next) => {
         let isImage = req.files[i].mimetype.startsWith('image');
         let file;
         if(isImage) {
-          file = await Image.create(req.files[i]);
-          news.addImage(file); 
+          file = await Image.create({...req.files[i], news_id: news.id}, { foreignKey: 'news_id'});
+          // news.addImage(file); 
         }else {
-          file = await File.create(req.files[i]);
-          news.addFile(file);
+          file = await File.create({...req.files[i], news_id: news.id}, { foreignKey: 'news_id'});
+          // news.addFile(file);
         }
       };
     }

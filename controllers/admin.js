@@ -1,9 +1,10 @@
-const Admin = require("../models/admin");
+const db = require('../migrator');
+const Admin = db.admin;
 const bcrypt = require('bcrypt');
 const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const mailer = require("../util/nodemailer");
-const News = require('../models/news');
+const News = db.news;
 
 
 
@@ -124,6 +125,7 @@ exports.registerNewAdmin = (req,res,next) => {
               }
               mailer(message);
             }
+            console.log(' result.id',  result.id)
             res.status(201).json({
               message: 'Successfuly created new Admin!',
               data: result.id
@@ -149,6 +151,7 @@ exports.loginAdmin = (req, res, next) => {
       });
   }
   let loadeAdmin;
+  console.log('Admin', Admin)
     Admin
     .findOne({ 
       where: {
@@ -168,10 +171,11 @@ exports.loginAdmin = (req, res, next) => {
             loadeAdmin.dataValues.isConfirmed === false && 
             loadeAdmin.dataValues.isActive === false
           ) {
-          const err = new Error();
-          err.statusCode = 403;
-          err.message = 'your status is not activated yet:(';
-          throw err
+            return res
+              .status(400)
+              .json({ 
+                errors: [{param: 'email', msg: 'your status is not activated yet:('}] 
+            });
         }
         return bcrypt.compare(req.body.password, user.password);
       })
@@ -228,6 +232,7 @@ exports.getAdmins = (req,res, next) => {
 };
 
 exports.getAdmin = (req, res, next) => {
+  
   const adminId = req.params.adminId;
   Admin.findOne({
     where: {
