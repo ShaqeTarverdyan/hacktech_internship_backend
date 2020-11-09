@@ -1,40 +1,41 @@
-const Sequelize = require('sequelize');
-
-const sequelize = require('../util/database');
-const News = require('./news');
-
-const Image = sequelize.define("image",{
-    id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
+'use strict';
+module.exports = (sequelize, DataTypes) => {
+    const Image = sequelize.define('news_image', {
+      id: {
         allowNull: false,
-        primaryKey: true
-    },
-    fieldname: {
-        type: Sequelize.STRING(255),
-        allowNull: false
-    },
-    originalname: {
-        type: Sequelize.STRING(255),
-        allowNull: false
-    },
-    destination: {
-        type: Sequelize.STRING(255),
-        allowNull: false
-    },
-    filename: {
-        type: Sequelize.STRING(255),
-        allowNull: false
-    },
-    path: {
-        type: Sequelize.STRING(255),
-        allowNull: false
-    },
-    size: {
-        type: Sequelize.INTEGER,
-        allowNull: false
-    }
-})
-
-
-module.exports = Image;
+        autoIncrement: true,
+        primaryKey: true,
+        type: DataTypes.INTEGER
+      },
+      fieldname: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      originalname: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      destination: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      filename: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      path: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      size: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      }
+    }, {});
+    Image.associate = function(models) {
+      Image.belongsTo(models.news, {
+          foreignKey : 'news_id',
+      });
+    };
+    return Image;
+};

@@ -1,22 +1,25 @@
-const Sequelize = require('sequelize');
-
-const sequelize = require('../util/database');
-
-const Types = sequelize.define("types", {
-    id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
+'use strict';
+module.exports = (sequelize, DataTypes) => {
+    const Types = sequelize.define('news_types', {
+      id: {
         allowNull: false,
-        primaryKey: true
-    },
-    name: {
-        type: Sequelize.STRING(255),
-        allowNull: false
-    },
-    value: {
-        type: Sequelize.STRING(255),
-        allownull: false
-    }
-});
-
-module.exports = Types;
+        autoIncrement: true,
+        primaryKey: true,
+        type: DataTypes.INTEGER
+      },
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      value: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      }
+    }, {});
+    Types.associate = function(models) {
+      Types.hasMany(models.news, {
+          foreignKey : 'type_id',
+      });
+    };
+    return Types;
+};

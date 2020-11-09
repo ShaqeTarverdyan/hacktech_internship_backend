@@ -1,50 +1,46 @@
-const Sequelize = require('sequelize');
-
-const sequelize = require('../util/database');
-const News = require('./news');
-const AdminsNews = require('./AdminsNews');
-
-
-const Admin = sequelize.define('admins', {
-    id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        allowNull: false,
-        primaryKey: true
-
-    },
-    firstname: {
-        type: Sequelize.STRING(255),
-        allowNull: false
-    },
-    lastname: {
-        type: Sequelize.STRING(255),
-        allowNull: false
-    },
-    email: {
-        type: Sequelize.STRING(255),
-        allowNull: false,
-        unique: true,
-        validate: {
-            isEmail:true
-          }
-    },
-    password: {
-        type: Sequelize.STRING(64),
-    },
-    role: {
-        type: Sequelize.STRING(64),
-        allowNull: false,
-        default: 'I am new'
-    },
-    isActive: {
-        type: Sequelize.BOOLEAN(),
-        allowNull: false
-    },
-    isConfirmed: {
-        type: Sequelize.BOOLEAN(),
-        allowNull: false
-    }
-});
-Admin.belongsToMany(News, { through: AdminsNews });
-module.exports = Admin
+'use strict';
+module.exports = (sequelize, DataTypes) => {
+    const Admin = sequelize.define('admin', {
+        id: {
+          allowNull: false,
+          autoIncrement: true,
+          primaryKey: true,
+          type: DataTypes.INTEGER
+        },
+        firstname: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        lastname: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        email: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        password: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        role: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        isActive: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+        },
+        isConfirmed: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+        }
+    }, {});
+    Admin.associate = function(models) {
+      Admin.belongsToMany(models.news, {
+        foreignKey: 'admin_id',
+        through: 'admin_News'
+      })
+    };
+    return Admin;
+};
