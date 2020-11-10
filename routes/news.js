@@ -2,33 +2,20 @@ const express = require('express');
 const router = express.Router();
 const newsController = require('../controllers/news');
 const isAuth = require('../middleware/is-auth');
-var multer  = require('multer')
-const path = require('path');
-const uuid = require('uuid');
 const newsValidator = require('../validations/newsValidator');
+const uploader = require('../util/fileUploader');
 
-
-const fileStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'public/uploads');
-    },
-    filename: (req, file, cb) => {
-        cb(null, uuid.v4() + path.extname(file.originalname));
-    }
-});
-
-const upload = multer({ storage: fileStorage });
 
 router.post(
             '/news',
-            upload.array('file', 10),
+            uploader.array('file', 10),
             isAuth,
             newsValidator(),
             newsController.addNews
         );
 router.put(
             '/news/:newsId', 
-            upload.array('file', 10), 
+            uploader.array('file', 10), 
             isAuth, 
             newsValidator(),
             newsController.updateNews
