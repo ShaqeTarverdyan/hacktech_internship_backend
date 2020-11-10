@@ -3,6 +3,7 @@ const router = express.Router();
 const adminController = require('../controllers/admin');
 const userFullValidator = require('../validations/signUpValidator');
 const loginValidator = require('../validations/loginValidator');
+const editProfileValidator = require('../validations/editProfileValidator');
 
 router.post(
     '/admin', 
@@ -12,7 +13,7 @@ router.get('/admins', adminController.getAdmins);
 router.get('/admin/:adminId', adminController.getAdmin);
 router.put(
     '/admin/:adminid', 
-    userFullValidator(),
+    editProfileValidator(),
     adminController.updateAdmin
 );
 router.delete('/admin/:adminId', adminController.deleteAdmin)

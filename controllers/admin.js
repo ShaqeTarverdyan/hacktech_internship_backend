@@ -263,15 +263,16 @@ exports.getAdmin = (req, res, next) => {
 };
 
 exports.updateAdmin = (req,res,next) => {
-  const { id,firstname, lastname, email } = req.body;
+  const { firstname, lastname, email } = req.body;
+  const id = req.params.adminid
   const errors = validationResult(req);
-    if(!errors.isEmpty()) {
-      const error = new Error()
-      error.statusCode = 422;
-      error.message = 'Validation Failed!.entered data is not correct!';
-      throw error;
-      
-    }
+  if (!errors.isEmpty()) {
+    return res
+      .status(400)
+      .json({ 
+        errors: errors.array()
+      });
+  }
   Admin.findOne({
     where: {
       id: id
@@ -279,10 +280,11 @@ exports.updateAdmin = (req,res,next) => {
   })
   .then(admin => {
     if(!admin) {
-      const error = new Error();
-      error.statusCode = 404;
-      error.message = 'Could not find admin !';
-      throw error;
+      return res
+        .status(400)
+        .json({ 
+          errors: [{param: 'email', msg: 'Could not find admin with this email'}]
+        });
     }
     admin.firstname = firstname,
     admin.lastname = lastname;
