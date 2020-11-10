@@ -7,5 +7,8 @@ module.exports = () =>
         .notEmpty(),
     body('content', "The content must not be empty")
         .trim()
-        .notEmpty()
+        .notEmpty(),
+    body('type_id', "the type id must not be empty")
+        .trim()
+        .notEmpty(),
 ]
