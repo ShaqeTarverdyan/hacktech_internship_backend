@@ -185,7 +185,7 @@ exports.getNewsList = async(req, res) => {
 exports.addNews = async (req,res,next) => {
   try {
     const admin_id = req.adminId;
-    const { title, content, typeId  } = req.body;
+    const { title, content, type_id  } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res
@@ -209,7 +209,7 @@ exports.addNews = async (req,res,next) => {
     let news = await News.create({
       title: title,
       content: content,
-      type_id: typeId,
+      type_id: type_id,
     });
     if(req.files) {
       for(let i = 0; i < req.files.length; i++) {
@@ -231,7 +231,6 @@ exports.addNews = async (req,res,next) => {
           news: result,
     })
   }catch (err)  {
-    console.log('err', err)
         if(!err.statusCode) {
           err.statusCode = 500;
         }
@@ -243,14 +242,15 @@ exports.updateNews = async (req,res,next) => {
   try {
     const admin_id = req.adminId;
     const newsId = req.params.newsId;
-    const { title, content, newsType } = req.body;
+    const { title, content, type_id } = req.body;
     const errors = validationResult(req);
-      if(!errors.isEmpty()) {
-        const error = new Error('Validation Failed!.entered data is not correct!')
-        error.statusCode = 422;
-        throw error;
-        
-      }
+    if (!errors.isEmpty()) {
+      return res
+        .status(400)
+        .json({ 
+          errors: errors.array()
+        });
+    }
 
     const news = await News.findOne ({
       where: {
@@ -258,13 +258,11 @@ exports.updateNews = async (req,res,next) => {
       }
     })
     if(!news) {
-      const error = new Error('Could not find admin !');
-      error.statusCode = 404;
-      throw error;
+        return res.status(400).json({message: 'Could not find news !'})
     }
     news.title = title,
     news.content = content,
-    news.newsType = newsType,
+    news.type_id = type_id,
     news.admin_id = admin_id
     if(req.files) {
       for(let i = 0; i < req.files.length; i++) {

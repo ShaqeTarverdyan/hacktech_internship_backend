@@ -20,12 +20,19 @@ const fileStorage = multer.diskStorage({
 const upload = multer({ storage: fileStorage });
 
 router.post(
-        '/news',
-        upload.array('file', 10),
-        isAuth,
-        newsValidator(),
-        newsController.addNews);
-router.put('/news/:newsId', upload.array('file', 10), isAuth, newsController.updateNews);
+            '/news',
+            upload.array('file', 10),
+            isAuth,
+            newsValidator(),
+            newsController.addNews
+        );
+router.put(
+            '/news/:newsId', 
+            upload.array('file', 10), 
+            isAuth, 
+            newsValidator(),
+            newsController.updateNews
+        );
 router.delete('/news/:newsId',isAuth, newsController.deleteNews);
 router.get('/news-/:newsId', isAuth, newsController.getCurrentNews);
 router.get("/types",isAuth, newsController.getTypes);
