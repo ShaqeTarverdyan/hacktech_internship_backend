@@ -125,7 +125,6 @@ exports.registerNewAdmin = (req,res,next) => {
               }
               mailer(message);
             }
-            console.log(' result.id',  result.id)
             res.status(201).json({
               message: 'Successfuly created new Admin!',
               data: result.id

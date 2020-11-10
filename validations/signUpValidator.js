@@ -1,5 +1,6 @@
 const { body } = require('express-validator');
-const Admin = require('../models/admin');
+const db = require('../migrator');
+const Admin = db.admin;
 
 
 module.exports = () => 
@@ -16,7 +17,7 @@ module.exports = () =>
                 .isEmail()
                 .normalizeEmail()
                 .custom((value, { req }) => {
-                    return Admin.findOne({email: value}).then(result => {
+                    return Admin.findOne({where: {email: value}}).then(result => {
                         if(result) {
                             return Promise.reject("Email is already exists, Please pick a different email")
                         }
