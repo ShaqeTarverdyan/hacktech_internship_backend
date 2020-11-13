@@ -8,19 +8,27 @@ module.exports = (fullSelectedNews) => {
     pdfDoc.pipe(fs.createWriteStream(pdfFileName));
     fullSelectedNews.map(item => {
       pdfDoc
-        .fontSize(8)
-        .fillColor('blue')
+        .fontSize(18)
+        .fillColor('black')
         .text(
           item.title, 
-          {oblique : true, width: 410, align: 'center'}
+          { width: 410, align: 'center'}
         );
-      pdfDoc
-        .fillColor('red')
-        .text(item.content), {oblique : true, width: 410, align: 'left'};
       item.news_images.map(image => 
-          pdfDoc
-            .image(image.dataValues.path, {width: 150, height: 150, align: 'center'}))
+        pdfDoc
+        .image(image.dataValues.path, {width: 80, height: 80, valign:'top', align: 'left', float: 'left'})
+      )
+      pdfDoc
+        .fillColor('grey')
+        .fontSize(13)
+        .text(item.content), {
+          paragraphGap: 10,
+          indent: 20,
+          align: 'justify',
+          columns: 2
+        };
       });
     pdfDoc.end();
     return pdfFileName;
   }
+
