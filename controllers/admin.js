@@ -32,7 +32,7 @@ exports.sendInvitation = (req, res, next) => {
     to: email,
     subject: 'Invitation Message',
     html: `
-      <a href="${process.env.REACT_BASE_URL}accept-invitation/${invitToken}">got throw this link and activate</a>
+      <a href="${process.env.REACT_BASE_URL}/accept-invitation/${invitToken}">got throw this link and activate</a>
     `
   }
   mailer(invitationMessage);
